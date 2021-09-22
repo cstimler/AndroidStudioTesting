@@ -38,6 +38,7 @@ class DefaultTasksRepository constructor(
     private val tasksLocalDataSource: TasksDataSource,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO) : TasksRepository {
 
+    /* Don't need this object any more because am now using a ServiceLocator:
     companion object {
         @Volatile
         private var INSTANCE: DefaultTasksRepository? = null
@@ -55,6 +56,7 @@ class DefaultTasksRepository constructor(
             }
         }
     }
+     */
 
     override suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
         if (forceUpdate) {
