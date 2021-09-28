@@ -48,7 +48,7 @@ class FakeTestRepository : TasksRepository {
     }
 
     override suspend fun completeTask(task: Task) {
-        TODO("Not yet implemented")
+       runBlocking{ task.isCompleted = true }
     }
 
     override suspend fun completeTask(taskId: String) {

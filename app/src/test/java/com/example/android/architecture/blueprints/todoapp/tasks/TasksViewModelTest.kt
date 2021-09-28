@@ -5,18 +5,44 @@ import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.Event
+import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
+import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import junit.framework.TestCase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
+import org.junit.After
 import org.junit.Assert.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@ExperimentalCoroutinesApi
 class TasksViewModelTest {
+
+    /* old boilerplate that worked but was removed after adding "MainCoroutineRule" class:
+    val testDispatcher : TestCoroutineDispatcher = TestCoroutineDispatcher()
+
+    @Before
+    fun setupDispatcher() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDownDispatcher() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
+    }
+     */
+    @get: Rule
+    var mainCoroutineRule = MainCoroutineRule()
 
     private lateinit var tasksRepository: FakeTestRepository
 
@@ -62,5 +88,21 @@ class TasksViewModelTest {
         assertThat(
             value, `is`(true)
         )
+    }
+
+    @Test
+    fun completeTask_dataAndSnackbarUpdated() {
+        // With a repository that has an active task
+        val task = Task("Title", "Description")
+        tasksRepository.addTasks(task)
+        // Complete task:
+        tasksViewModel.completeTask(task, true)
+
+        // Verify the task is completed
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(true))
+        // The snackbar is updated
+        val snackbarText: Event<Int> = tasksViewModel.snackbarText.getOrAwaitValue()
+        assertThat(snackbarText.getContentIfNotHandled(), `is` (R.string.task_marked_complete))
+
     }
 }
