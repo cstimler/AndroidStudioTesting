@@ -10,6 +10,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.util.Logger.error
 
 @ExperimentalCoroutinesApi
 class StatisticsViewModelTest {
@@ -44,5 +45,15 @@ class StatisticsViewModelTest {
         assertThat(statisticsViewModel.dataLoading.getOrAwaitValue(), `is` (true))
         mainCoroutineRule.resumeDispatcher()
         assertThat(statisticsViewModel.dataLoading.getOrAwaitValue(), `is` (false))
+    }
+
+    @Test
+    fun loadStatisticsWhenTasksAreUnavailable_callErrorToDisplay() {
+        // Make repository return errors
+        tasksRepository.setReturnError(true)
+        statisticsViewModel.refresh()
+        // Then an error message is shown
+        assertThat(statisticsViewModel.empty.getOrAwaitValue(), `is` (true))
+        assertThat(statisticsViewModel.error.getOrAwaitValue(), `is` (true))
     }
 }
